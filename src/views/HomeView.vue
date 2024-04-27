@@ -33,7 +33,7 @@ export default {
         };
 
         ws.onmessage = (event) => {
-          console.log('auu');
+          console.log('Data received');
         };
 
         ws.onclose = () => {
@@ -61,17 +61,17 @@ export default {
     <form @submit.prevent="connect" class="form">
       <div class="mb-3 host">
         <label for="exampleFormControlInput1" class="form-label">Host</label>
-        <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket">
+        <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket"  required>
       </div>
 
       <div class="mb-3 data">
         <label for="exampleFormControlTextarea1" class="form-label">Opening data</label>
-        <textarea class="form-control" id="data" rows="10"></textarea>
+        <textarea class="form-control" id="data"  placeholder="Optional data to send after each succesfull connection" rows="10"></textarea>
       </div>
 
       <div class="mb-3 times">
         <label for="exampleFormControlTextarea1" class="form-label">Times</label>
-        <input type="number" id="times" name="tentacles" min="1" max="1000" />
+        <input type="number" id="times" name="tentacles"  min="1" max="1000" value="1" />
       </div>
 
 
@@ -81,7 +81,13 @@ export default {
       </div>
     </form>
 
-
+    <div class="HolderRow" v-for="(row, rowindex) in 9" :key="rowindex">
+    <Holder
+        v-for="(holder, holderindex) in 11"
+        :key="holderindex"
+        :holder="holder + (11 * rowindex)"
+    />
+</div>
 
 
   </main>
@@ -144,7 +150,6 @@ main {
   align-items: center;
   white-space: nowrap;
 
-
 }
 
 label {
@@ -183,6 +188,7 @@ label {
   text-align: center;
   border-radius: 0.5em;
   margin: 0;
+  
 }
 
 .form {
