@@ -5,6 +5,7 @@
 
 <script>
 import * as bootstrap from 'bootstrap';
+import moment from 'moment'
 
 
 export default {
@@ -12,7 +13,15 @@ export default {
   name: 'websocket-load-tester',
 
 
+  data() {
+    return {
+      dataLog: [],
+    }
+
+  },
+
   methods: {
+
 
     async connect() {
       const host = document.getElementById('host').value;
@@ -22,10 +31,10 @@ export default {
 
       // let ws = [];
 
-      
+
       for (var i = 0; i < times; i++) {
 
-       const ws = new WebSocket(host);
+        const ws = new WebSocket(host);
 
         ws.onopen = () => {
           console.log('Connected to ' + host);
@@ -33,7 +42,17 @@ export default {
         };
 
         ws.onmessage = (event) => {
-          console.log('Data received');
+
+          if (this.dataLog.length == times) {
+            this.dateCompare(this.dataLog);
+            this.dataLog = [];
+            // this.dataLog.shift();
+          }
+          this.dataLog.push(moment());
+
+
+          // console.log(this.dataLog);
+          // console.log('Data received');
         };
 
         ws.onclose = () => {
@@ -46,8 +65,35 @@ export default {
 
     },
 
+    async dateCompare(dataLog) {
+
+
+       for (let index = 0; index < dataLog.length; index+=2) {
+
+          // Get position of the array
+          const date1 = dataLog[index];
+          const date2 = dataLog[index + 1];
+
+          if (date1 == undefined || date2 == undefined) {
+            return;
+          }
+
+          // Calcular a diferença em segundos
+          let diffInSeconds = date2.diff(date1, 'seconds');
+
+          console.log(diffInSeconds);
+
+
+        }
+
+
+
+
+    },
+
   }
 }
+
 
 
 
@@ -61,17 +107,18 @@ export default {
     <form @submit.prevent="connect" class="form">
       <div class="mb-3 host">
         <label for="exampleFormControlInput1" class="form-label">Host</label>
-        <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket"  required>
+        <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket" required>
       </div>
 
       <div class="mb-3 data">
         <label for="exampleFormControlTextarea1" class="form-label">Opening data</label>
-        <textarea class="form-control" id="data"  placeholder="Optional data to send after each succesfull connection" rows="10"></textarea>
+        <textarea class="form-control" id="data" placeholder="Optional data to send after each succesfull connection"
+          rows="10"></textarea>
       </div>
 
       <div class="mb-3 times">
         <label for="exampleFormControlTextarea1" class="form-label">Times</label>
-        <input type="number" id="times" name="tentacles"  min="1" max="1000" value="1" />
+        <input type="number" id="times" name="tentacles" min="1" max="1000" value="1" />
       </div>
 
 
@@ -82,12 +129,8 @@ export default {
     </form>
 
     <div class="HolderRow" v-for="(row, rowindex) in 9" :key="rowindex">
-    <Holder
-        v-for="(holder, holderindex) in 11"
-        :key="holderindex"
-        :holder="holder + (11 * rowindex)"
-    />
-</div>
+      <Holder v-for="(holder, holderindex) in 11" :key="holderindex" :holder="holder + (11 * rowindex)" />
+    </div>
 
 
   </main>
@@ -188,7 +231,7 @@ label {
   text-align: center;
   border-radius: 0.5em;
   margin: 0;
-  
+
 }
 
 .form {
