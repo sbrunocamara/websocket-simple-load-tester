@@ -16,6 +16,16 @@ export default {
   data() {
     return {
       dataLog: [],
+      diferences: [],
+      statistics: {
+        minor: 0,
+        major: 0,
+        average: 0
+      },
+      model: {
+        connectionOptionsTogle: 1,
+        websocketLogTogle: 0,
+      },
     }
 
   },
@@ -31,8 +41,13 @@ export default {
 
       // let ws = [];
 
+      this.model.connectionOptionsTogle = 0;
+      this.model.websocketLogTogle = 1;
 
       for (var i = 0; i < times; i++) {
+
+       
+  
 
         const ws = new WebSocket(host);
 
@@ -50,7 +65,6 @@ export default {
           }
           this.dataLog.push(moment());
 
-
           // console.log(this.dataLog);
           // console.log('Data received');
         };
@@ -60,7 +74,6 @@ export default {
         };
 
       }
-
 
 
     },
@@ -81,17 +94,61 @@ export default {
           // Calcular a diferença em segundos
           let diffInSeconds = date2.diff(date1, 'seconds');
 
-          console.log(diffInSeconds);
+          // Add difference to array
+          this.diferences.push(diffInSeconds);
+
 
 
         }
+
+        this.calculateStatistics(this.diferences);
 
 
 
 
     },
+    async calculateStatistics(array) {
 
-  }
+    if (array.length === 0) {
+        return false;
+    }
+    
+    let minor = array[0];
+    let major = array[0];
+    let sum = array[0];
+    
+    for (let i = 1; i < array.length; i++) {
+        if (array[i] < minor) {
+          minor = array[i];
+        }
+        if (array[i] > major) {
+          major = array[i];
+        }
+        sum += array[i];
+    }
+    
+    const average = sum / array.length;
+
+    this.statistics = {
+        minor: minor,
+        major: major,
+        average: average
+    };
+    
+    return {
+        minor: minor,
+        major: major,
+        average: average
+    };
+},
+
+
+  },
+  watch: {
+    statistics: function (val) {
+      console.log('statistics changed', val);
+    }
+  },
 }
 
 
@@ -104,7 +161,7 @@ export default {
   <main>
 
     <!-- FORM -->
-    <form @submit.prevent="connect" class="form">
+    <form v-show="model.connectionOptionsTogle == 1" @submit.prevent="connect" class="form">
       <div class="mb-3 host">
         <label for="exampleFormControlInput1" class="form-label">Host</label>
         <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket" required>
@@ -132,6 +189,13 @@ export default {
       <Holder v-for="(holder, holderindex) in 11" :key="holderindex" :holder="holder + (11 * rowindex)" />
     </div>
 
+    <div v-show="model.websocketLogTogle == 1" class="statistics">
+      <p>Minor: {{this.statistics.minor}} seconds</p>
+      <p>Major: {{this.statistics.major}} seconds</p>
+      <p>Average: {{this.statistics.average}} seconds</p>
+    </div>
+
+    
 
   </main>
 
@@ -172,7 +236,7 @@ textarea {
 main {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   height: 100vh;
   background-color: #2c2c2c;
@@ -248,5 +312,24 @@ label {
 .times label {
   width: 5em;
 
+}
+
+.statistics {
+  display: flex;
+  flex-direction: row;
+  justify-content: unset;
+  margin-top: 15em;
+
+}
+
+.statistics p {
+  margin-right: 80px; /* Espaçamento entre os parágrafos */
+  background-color: #6e1c9e;
+  color: #ffffff;
+  width: 10em;
+  text-align: center;
+  border-radius: 1em;
+  white-space: nowrap;
+  
 }
 </style>
