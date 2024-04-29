@@ -1,6 +1,8 @@
 # websocket-load-tester
 
-Simple Vue.js Project to test Websockets with load and a great number of simultaneous connections
+# Simple Vue.js Project to test Websockets with load and a great number of simultaneous connections
+
+______________________________________________________________________________________________________________________________________
 
 This template should help get you started developing with Vue 3 in Vite.
 
