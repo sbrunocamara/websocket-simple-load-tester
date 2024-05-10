@@ -4,8 +4,7 @@
 </script>
 
 <script>
-import * as bootstrap from 'bootstrap';
-import moment from 'moment'
+import moment from 'moment';
 
 
 export default {
@@ -16,7 +15,6 @@ export default {
   data() {
     return {
       dataLog: [],
-      diferences: [],
       statistics: {
         minor: 0,
         major: 0,
@@ -39,15 +37,10 @@ export default {
       const times = document.getElementById('times').value;
 
 
-      // let ws = [];
-
       this.model.connectionOptionsTogle = 0;
       this.model.websocketLogTogle = 1;
 
       for (var i = 0; i < times; i++) {
-
-       
-  
 
         const ws = new WebSocket(host);
 
@@ -58,15 +51,15 @@ export default {
 
         ws.onmessage = (event) => {
 
+
           if (this.dataLog.length == times) {
             this.dateCompare(this.dataLog);
             this.dataLog = [];
-            // this.dataLog.shift();
+
           }
+
           this.dataLog.push(moment());
 
-          // console.log(this.dataLog);
-          // console.log('Data received');
         };
 
         ws.onclose = () => {
@@ -81,72 +74,82 @@ export default {
     async dateCompare(dataLog) {
 
 
-       for (let index = 0; index < dataLog.length; index+=2) {
+      let diferences = [];
 
-          // Get position of the array
-          const date1 = dataLog[index];
-          const date2 = dataLog[index + 1];
+      for (let index = 0; index < dataLog.length; index += 2) {
 
-          if (date1 == undefined || date2 == undefined) {
-            return;
-          }
+        // Get position of the array
+        const date1 = dataLog[index];
+        const date2 = dataLog[index + 1];
 
-          // Calcular a diferença em segundos
-          let diffInSeconds = date2.diff(date1, 'seconds');
-
-          // Add difference to array
-          this.diferences.push(diffInSeconds);
-
-
-
+        if (date1 == undefined || date2 == undefined) {
+          return;
         }
 
-        this.calculateStatistics(this.diferences);
+        // Calcular a diferença em segundos
+        let diffInSeconds = date2.diff(date1, 'seconds', true);
 
 
+        // Add difference to array
+        diferences.push(diffInSeconds);
+
+
+      }
+
+
+      this.calculateStatistics(diferences);
 
 
     },
-    async calculateStatistics(array) {
 
-    if (array.length === 0) {
+    async calculateStatistics(logs) {
+
+
+      if (logs.length === 0) {
         return false;
-    }
-    
-    let minor = array[0];
-    let major = array[0];
-    let sum = array[0];
-    
-    for (let i = 1; i < array.length; i++) {
-        if (array[i] < minor) {
-          minor = array[i];
-        }
-        if (array[i] > major) {
-          major = array[i];
-        }
-        sum += array[i];
-    }
-    
-    const average = sum / array.length;
+      }
 
-    this.statistics = {
+      let minor = logs[0];
+      let major = logs[0];
+      let sum = logs[0];
+
+      for (let i = 1; i < logs.length; i++) {
+        if (logs[i] < minor) {
+          minor = logs[i];
+        }
+        if (logs[i] > major) {
+          major = logs[i];
+        }
+        sum += logs[i];
+      }
+
+      let average = sum / logs.length;
+
+
+      minor = minor.toFixed(2);
+      major = major.toFixed(2);
+      average = average.toFixed(2);
+
+
+      this.statistics = {
         minor: minor,
         major: major,
         average: average
-    };
-    
-    return {
+      };
+
+
+
+      return {
         minor: minor,
         major: major,
         average: average
-    };
-},
+      };
+    },
 
 
   },
   watch: {
     statistics: function (val) {
-      console.log('statistics changed', val);
     }
   },
 }
@@ -185,17 +188,17 @@ export default {
       </div>
     </form>
 
-    <div class="HolderRow" v-for="(row, rowindex) in 9" :key="rowindex">
+    <!-- <div class="HolderRow" v-for="(row, rowindex) in 9" :key="rowindex">
       <Holder v-for="(holder, holderindex) in 11" :key="holderindex" :holder="holder + (11 * rowindex)" />
-    </div>
+    </div> -->
 
     <div v-show="model.websocketLogTogle == 1" class="statistics">
-      <p>Minor: {{this.statistics.minor}} seconds</p>
-      <p>Major: {{this.statistics.major}} seconds</p>
-      <p>Average: {{this.statistics.average}} seconds</p>
+      <p>Minor: {{ this.statistics.minor }} seconds</p>
+      <p>Major: {{ this.statistics.major }} seconds</p>
+      <p>Average: {{ this.statistics.average }} seconds</p>
     </div>
 
-    
+
 
   </main>
 
@@ -323,13 +326,12 @@ label {
 }
 
 .statistics p {
-  margin-right: 80px; /* Espaçamento entre os parágrafos */
+  /* Espaçamento entre os parágrafos */
   background-color: #6e1c9e;
   color: #ffffff;
-  width: 10em;
-  text-align: center;
   border-radius: 1em;
-  white-space: nowrap;
-  
+  margin: 0 1.5em;
+  padding: 0.5em 1em;
+
 }
 </style>
