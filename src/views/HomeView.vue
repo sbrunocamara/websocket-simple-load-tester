@@ -57,8 +57,6 @@ export default {
 
           this.dataLogging(event.data);
 
-          // console.log(moment().format('MMMM Do YYYY, h:mm:ss '));
-
           if (this.connecteds == this.model.times) {
             if (this.dataLog.length == this.model.times) {
               this.dateCompare(this.dataLog);
@@ -97,12 +95,6 @@ export default {
 
         // Add difference to array
         diferences.push(diffInSeconds);
-
-        // console.log({
-        //   date1: date1.format('MMMM Do YYYY, h:mm:ss '),
-        //   date2: date2.format('MMMM Do YYYY, h:mm:ss '),
-        //   diffInSeconds: diffInSeconds
-        // });
 
       }
 
