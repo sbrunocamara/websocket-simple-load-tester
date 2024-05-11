@@ -2,6 +2,8 @@
 
 ## Simple Vue.js Project to test Websockets with load and a great number of simultaneous connections
 
+This project is made to test and validate websocket with a great number os simultaneous connections considering a really simple cenario to test a simple websocket, it may not be good or work for all kind of cenarios and websockets applications.
+
 ______________________________________________________________________________________________________________________________________
 
 This template should help get you started developing with Vue 3 in Vite.
