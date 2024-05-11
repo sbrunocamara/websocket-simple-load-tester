@@ -15,15 +15,20 @@ export default {
   data() {
     return {
       dataLog: [],
+      connecteds: 0,
       statistics: {
         minor: 0,
         major: 0,
-        average: 0
+        average: 0,
       },
       model: {
         connectionOptionsTogle: 1,
         websocketLogTogle: 0,
+        data: '',
+        times: 1,
+        host: ''
       },
+      connections: [],
     }
 
   },
@@ -32,33 +37,36 @@ export default {
 
 
     async connect() {
-      const host = document.getElementById('host').value;
-      const data = document.getElementById('data').value;
-      const times = document.getElementById('times').value;
-
 
       this.model.connectionOptionsTogle = 0;
       this.model.websocketLogTogle = 1;
 
-      for (var i = 0; i < times; i++) {
+      for (var i = 0; i < this.model.times; i++) {
 
-        const ws = new WebSocket(host);
+        const ws = new WebSocket(this.model.host);
 
         ws.onopen = () => {
-          console.log('Connected to ' + host);
-          ws.send(data);
+          console.log('Connected to ' + this.model.host);
+          this.connections.push(ws);
+          ws.send(this.model.data);
+          ws.send(this.model.data);
+          this.connecteds++;
         };
 
         ws.onmessage = (event) => {
 
+          this.dataLogging(event.data);
 
-          if (this.dataLog.length == times) {
-            this.dateCompare(this.dataLog);
-            this.dataLog = [];
+          // console.log(moment().format('MMMM Do YYYY, h:mm:ss '));
 
+          if (this.connecteds == this.model.times) {
+            if (this.dataLog.length == this.model.times) {
+              this.dateCompare(this.dataLog);
+              this.dataLog = [];
+            }
+
+            this.dataLog.push(moment());
           }
-
-          this.dataLog.push(moment());
 
         };
 
@@ -68,11 +76,9 @@ export default {
 
       }
 
-
     },
 
     async dateCompare(dataLog) {
-
 
       let diferences = [];
 
@@ -89,21 +95,22 @@ export default {
         // Calcular a diferença em segundos
         let diffInSeconds = date2.diff(date1, 'seconds', true);
 
-
         // Add difference to array
         diferences.push(diffInSeconds);
 
+        // console.log({
+        //   date1: date1.format('MMMM Do YYYY, h:mm:ss '),
+        //   date2: date2.format('MMMM Do YYYY, h:mm:ss '),
+        //   diffInSeconds: diffInSeconds
+        // });
 
       }
 
-
       this.calculateStatistics(diferences);
-
 
     },
 
     async calculateStatistics(logs) {
-
 
       if (logs.length === 0) {
         return false;
@@ -125,19 +132,15 @@ export default {
 
       let average = sum / logs.length;
 
-
       minor = minor.toFixed(2);
       major = major.toFixed(2);
       average = average.toFixed(2);
-
 
       this.statistics = {
         minor: minor,
         major: major,
         average: average
       };
-
-
 
       return {
         minor: minor,
@@ -146,6 +149,38 @@ export default {
       };
     },
 
+    async dataLogging(data) {
+      
+      const textarea = this.$refs.textarea;
+
+      // Adicionar a nova mensagem à textarea
+      textarea.value += data + '\n';
+
+      // Rolagem automática para a parte inferior
+      textarea.scrollTop = textarea.scrollHeight;
+    },
+
+    async reset() {
+      this.model.connectionOptionsTogle = 1;
+      this.model.websocketLogTogle = 0;
+      this.connecteds = 0;
+      this.statistics = {
+        minor: 0,
+        major: 0,
+        average: 0,
+      };
+
+      const textarea = this.$refs.textarea;
+
+      textarea.value = '';
+
+      this.connections.forEach((ws) => {
+        console.log('Closing connection');
+        ws.close();
+      });
+
+
+    }
 
   },
   watch: {
@@ -153,9 +188,6 @@ export default {
     }
   },
 }
-
-
-
 
 
 </script>
@@ -166,19 +198,20 @@ export default {
     <!-- FORM -->
     <form v-show="model.connectionOptionsTogle == 1" @submit.prevent="connect" class="form">
       <div class="mb-3 host">
-        <label for="exampleFormControlInput1" class="form-label">Host</label>
-        <input type="text" class="form-control" id="host" placeholder="ws://example.com/websocket" required>
+        <label  for="FormControlInput1" class="form-label">Host</label>
+        <input type="text" class="form-control" v-model="model.host" id="host" placeholder="ws://example.com/websocket"
+          required>
       </div>
 
       <div class="mb-3 data">
         <label for="exampleFormControlTextarea1" class="form-label">Opening data</label>
-        <textarea class="form-control" id="data" placeholder="Optional data to send after each succesfull connection"
-          rows="10"></textarea>
+        <textarea class="form-control" id="data" v-model="model.data"
+          placeholder="Optional data to send after each succesfull connection" rows="10"></textarea>
       </div>
 
       <div class="mb-3 times">
         <label for="exampleFormControlTextarea1" class="form-label">Times</label>
-        <input type="number" id="times" name="tentacles" min="1" max="1000" value="1" />
+        <input type="number" id="times" v-model="model.times" name="tentacles" min="1" max="1000" value="1" />
       </div>
 
 
@@ -188,18 +221,22 @@ export default {
       </div>
     </form>
 
-    <!-- <div class="HolderRow" v-for="(row, rowindex) in 9" :key="rowindex">
-      <Holder v-for="(holder, holderindex) in 11" :key="holderindex" :holder="holder + (11 * rowindex)" />
-    </div> -->
-
+    <!-- STATISTICS -->
     <div v-show="model.websocketLogTogle == 1" class="statistics">
       <p>Minor: {{ this.statistics.minor }} seconds</p>
       <p>Major: {{ this.statistics.major }} seconds</p>
       <p>Average: {{ this.statistics.average }} seconds</p>
     </div>
 
+    <!-- LOG -->
+    <div v-show="model.websocketLogTogle == 1" class="log">
+      <textarea id="textLog" ref="textarea" rows="12" cols="70" readonly></textarea>
+    </div>
 
-
+    <!-- Send websocket data -->
+    <div v-show="model.websocketLogTogle == 1" class="btn-group" role="group" aria-label="Basic example">
+      <button @click="reset" type="submit" class="btn btn-primary send">Reset</button>
+    </div>
   </main>
 
 </template>
@@ -334,4 +371,25 @@ label {
   padding: 0.5em 1em;
 
 }
+
+.log {
+  margin-top: 8em;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+
+
+}
+
+.log textarea {
+  font-size: 16px;
+  white-space: nowrap;
+  background-color: #c4c2c2;
+  color: rgb(0, 0, 0);
+  
+}
+
 </style>
