@@ -190,19 +190,19 @@ export default {
     <!-- FORM -->
     <form v-show="model.connectionOptionsTogle == 1" @submit.prevent="connect" class="form">
       <div class="mb-3 host">
-        <label  for="FormControlInput1" class="form-label">Host</label>
+        <label  for="host" class="form-label">Host</label>
         <input type="text" class="form-control" v-model="model.host" id="host" placeholder="ws://example.com/websocket"
           required>
       </div>
 
       <div class="mb-3 data">
-        <label for="exampleFormControlTextarea1" class="form-label">Opening data</label>
+        <label for="data" class="form-label">Opening data</label>
         <textarea class="form-control" id="data" v-model="model.data"
           placeholder="Optional data to send after each succesfull connection" rows="10"></textarea>
       </div>
 
       <div class="mb-3 times">
-        <label for="exampleFormControlTextarea1" class="form-label">Times</label>
+        <label for="times" class="form-label">Times</label>
         <input type="number" id="times" v-model="model.times" name="tentacles" min="1" max="1000" value="1" />
       </div>
 
